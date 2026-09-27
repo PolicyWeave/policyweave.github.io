@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Train Together or Merge Later? Unifying VLA Experts via a Shared Action Interface. PolicyWeave preserves mergeability during task-specific VLA post-training and uses context-guided sparse merging for multi-task robot control.">
+  <link rel="canonical" href="https://policyweave.github.io/">
+  <meta property="og:title" content="Train Together or Merge Later? Unifying VLA Experts via a Shared Action Interface">
+  <meta property="og:description" content="Merge-compatible post-training and context-guided sparse merging for multi-task robot control.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://policyweave.github.io/">
+  <meta property="og:image" content="https://policyweave.github.io/assets/images/method.png">
+  <meta name="citation_title" content="Train Together or Merge Later? Unifying VLA Experts via a Shared Action Interface">
+  <meta name="citation_author" content="Zhizhen Zhang">
+  <meta name="citation_author" content="Yuxia Fu">
+  <meta name="citation_author" content="Zijian Wang">
+  <meta name="citation_author" content="Zi Huang">
+  <meta name="citation_author" content="Yadan Luo">
+  <meta name="citation_pdf_url" content="https://policyweave.github.io/assets/paper.pdf">
+  <meta name="theme-color" content="#ffffff">
+  <title>Train Together or Merge Later? Unifying VLA Experts via a Shared Action Interface</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23c94e46'/%3E%3Cpath d='M8 12C26 12 14 28 32 28M8 28C26 28 14 12 32 12' stroke='%23ffffff' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/lato-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/lato-bold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+  <script src="robot-lab.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="wordmark" href="#main" aria-label="PolicyWeave home"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M3 8C18 8 14 24 29 24M3 16H29M3 24C18 24 14 8 29 8"/></svg>Policy<span>Weave</span></a>
+      <nav aria-label="Main navigation"><a href="#overview">Overview</a><a href="#interface-lab">Interactive demo</a><a href="#method">Method</a><a href="#results">Results</a></nav>
+      <a class="nav-paper" href="assets/paper.pdf" target="_blank" rel="noopener">Paper <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero wide-shell" aria-labelledby="paper-title">
+      <div class="hero-copy">
+      <h1 id="paper-title">Train Together or <span class="title-phrase">Merge Later?</span>
+        <span class="paper-subtitle">Unifying VLA Experts via a <span class="title-phrase">Shared Action Interface</span></span>
+      </h1>
+      <p class="authors">
+        <span><a href="https://openreview.net/profile?id=~Zhizhen_Zhang1">Zhizhen Zhang</a><sup>1</sup></span>
+        <span><a href="https://openreview.net/profile?id=~Yuxia_Fu1">Yuxia Fu</a><sup>1</sup></span>
+        <span><a href="https://openreview.net/profile?id=~Zijian_Wang2">Zijian Wang</a><sup>1</sup></span>
+        <span><a href="https://openreview.net/profile?id=~Zi_Huang1">Zi Huang</a><sup>1</sup></span>
+        <span><a href="https://openreview.net/profile?id=~Yadan_Luo1">Yadan Luo</a><sup>1</sup></span>
+      </p>
+      <p class="affiliation"><sup>1</sup> UQMM Lab, The University of Queensland</p>
+      <div class="resource-links">
+        <a class="button" href="assets/paper.pdf" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7zM14 3v5h4M10 12h5M10 16h5"/></svg>Paper</a>
+        <button class="button" type="button" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5m-3-13-2 16"/></svg>Code · Coming soon</button>
+        <a class="button" href="#interface-lab"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h7m-4 0v-5l4-4 5 2 4-5M9 10l-3-5 4-2 4 6m4 2 4 3m-2-6 2 2"/></svg>Interactive demo</a>
+      </div>
+      </div>
+      <div class="hero-showcase">
+        <div class="showcase-topline"><span id="featured-task-title">Stack blocks</span><span>AgileX Piper</span></div>
+        <div class="hero-video-frame">
+          <video id="hero-video" muted loop playsinline preload="none" poster="assets/images/stack-blocks.jpg" aria-label="Selected successful PolicyWeave rollout: stack blocks"><source src="assets/videos/stack-blocks.mp4" type="video/mp4"><a href="assets/videos/stack-blocks.mp4">Download stacking demonstration</a></video>
+          <button type="button" class="hero-play" id="hero-play" aria-label="Play featured demonstration"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 11 7-11 7z"/></svg><span>Play video</span></button>
+        </div>
+        <div class="hero-task-picker" role="group" aria-label="Choose featured robot demonstration">
+          <button type="button" data-hero-task="upright-bottle" aria-pressed="false">Upright bottle</button>
+          <button type="button" data-hero-task="stack-blocks" aria-pressed="true">Stack blocks</button>
+          <button type="button" data-hero-task="press-button" aria-pressed="false">Press button</button>
+          <button type="button" data-hero-task="place-cup" aria-pressed="false">Place cup</button>
+        </div>
+        <p class="hero-media-note">PolicyWeave on four real-robot tasks. Selected successful rollouts, shown at original speed.</p>
+        <p class="sr-only" id="video-status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="overview section-shell section-space" id="overview" aria-labelledby="overview-title">
+      
+      <div class="split-heading"><h2 id="overview-title">Overview</h2><p class="lead-copy">Independently post-trained VLA experts can lose performance when their parameters are merged. PolicyWeave preserves a shared <strong>action interface</strong>, including normalization, the action encoder, and the action decoder, during task-specific SFT or SFT then RL. At deployment, the initial scene and instruction guide sparse merging. The resulting parameters remain fixed throughout the episode.</p></div>
+    </section>
+
+    <section class="playground-section" id="interface-lab" aria-labelledby="lab-title">
+    <div class="interface-lab wide-shell">
+      <div class="lab-heading"><span class="eyebrow">INTERACTIVE EXPLAINER</span><h2 id="lab-title">Two correct experts.<br><span>A different result when merged.</span></h2><p class="section-intro">Both experts produce the same action. Change their interface scales and mixing weights to see why merging their parameters can miss the target.</p></div>
+      <div class="lab-presets" role="group" aria-label="Interface examples"><span>Try an example</span><button type="button" data-lab-preset="1" aria-pressed="false">01 <span>Same interface</span></button><button type="button" data-lab-preset="3" aria-pressed="false">02 <span>Small mismatch</span></button><button type="button" data-lab-preset="6" aria-pressed="true">03 <span>Large mismatch</span></button></div>
+      
+      <div class="lab-controls">
+        <div class="lab-mode-control"><span class="control-label">Policy parameters</span><div class="lab-modes" role="group" aria-label="Choose parameters to execute">
+          <button type="button" data-lab-mode="a" aria-pressed="false"><span class="expert-dot expert-a"></span>Expert A</button>
+          <button type="button" data-lab-mode="b" aria-pressed="false"><span class="expert-dot expert-b"></span>Expert B</button>
+          <button type="button" data-lab-mode="merge" aria-pressed="true">Merge A + B</button>
+        </div></div>
+        <div class="lab-slider">
+          <div class="lab-slider-heading"><label for="interface-ratio">Interface difference</label><output id="ratio-value" for="interface-ratio">6.00×</output></div>
+          <input id="interface-ratio" type="range" min="1" max="8" step="0.05" value="6" aria-describedby="ratio-help">
+          <div id="ratio-help" class="range-labels"><span>Same scale</span><span>Expert B uses 8× the scale</span></div>
+        </div>
+        <div class="lab-slider mixture-control">
+          <div class="lab-slider-heading"><label for="merge-weight">Expert mixture</label><output id="weight-value" for="merge-weight">50 : 50</output></div>
+          <input id="merge-weight" type="range" min="0" max="1" step="0.01" value="0.5" aria-describedby="weight-help">
+          <div id="weight-help" class="range-labels"><span>All A</span><span>All B</span></div>
+        </div>
+      </div>
+      <div class="lab-panels">
+        <article class="lab-panel" id="lab-specific">
+          <div class="lab-panel-heading"><div><span class="panel-kicker">SEPARATE ACTION MAPPINGS</span><h3>Task-specific interfaces</h3></div><span class="scene-badge" id="badge-specific">Off target</span></div>
+          <div class="lab-plot" id="plot-specific"><p class="scene-loading">Preparing the robot workspace…</p></div>
+          <div class="lab-readout"><div><span>Executed action</span><strong id="action-specific">2.042</strong></div><div><span>Target deviation</span><strong id="error-specific">+104.2%</strong></div></div>
+          <p class="lab-explanation" id="explanation-specific">Averaging breaks the match between internal parameters and interface.</p>
+        </article>
+        <article class="lab-panel lab-panel-shared" id="lab-shared">
+          <div class="lab-panel-heading"><div><span class="panel-kicker">ONE COMMON ACTION MAPPING</span><h3>Shared interface</h3></div><span class="scene-badge">On target</span></div>
+          <div class="lab-plot" id="plot-shared"><p class="scene-loading">Preparing the robot workspace…</p></div>
+          <div class="lab-readout"><div><span>Executed action</span><strong id="action-shared">1.000</strong></div><div><span>Target deviation</span><strong id="error-shared">0.0%</strong></div></div>
+          <p class="lab-explanation">Shared scaling preserves the target in this example.</p>
+        </article>
+      </div>
+      <div class="lab-playback"><div class="playback-buttons"><button id="lab-replay" type="button"><span aria-hidden="true">↻</span> Replay motion</button><button id="lab-pause" type="button" aria-pressed="false">Pause</button></div><div class="motion-track"><label for="lab-progress" id="lab-motion-status">Reach comparison</label><input id="lab-progress" type="range" min="0" max="1" step="0.005" value="1" aria-label="Scrub the illustrative robot motion"><output id="motion-percent" for="lab-progress">100%</output></div><button id="lab-reset-view" type="button">Reset view <span aria-hidden="true">↗</span></button></div>
+      <div class="lab-analysis">
+        <div class="parameter-panel">
+          <span class="eyebrow">FOLLOW THE PARAMETERS</span><h3>Same actions, different parameters</h3>
+          <p>For input 1, the hidden weight × output scale gives the action.</p>
+          <div class="parameter-head"><span>Policy</span><span>Hidden weight</span><span>Output scale</span><span>Action</span></div>
+          <div class="parameter-row"><span><i class="expert-dot expert-a"></i>Expert A</span><output>1.000</output><output>1.000</output><output>1.000</output></div>
+          <div class="parameter-row"><span><i class="expert-dot expert-b"></i>Expert B</span><output id="factor-b-weight">0.167</output><output id="factor-b-scale">6.000</output><output>1.000</output></div>
+          <div class="parameter-row parameter-merged"><span id="factor-policy">Merged</span><output id="factor-weight">0.583</output><output id="factor-scale">3.500</output><output id="factor-action">2.042</output></div>
+          <div class="shared-equation"><span>Shared interface</span><span><b>1.000</b> × <b>1.000</b> = <strong>1.000</strong></span></div>
+        </div>
+        <div class="sweep-panel">
+          <span class="eyebrow">EXPLORE THE MIXTURE</span><h3>What happens between the experts?</h3>
+          <div class="sweep-legend"><span><i></i>Task-specific</span><span><i></i>Shared</span><span>Action deviation (%)</span></div>
+          <svg id="mixture-chart" viewBox="0 0 440 180" role="img" aria-labelledby="mixture-chart-title mixture-chart-desc">
+            <title id="mixture-chart-title">Action deviation across expert mixtures</title><desc id="mixture-chart-desc">Analytical output deviation in a scalar illustration, not experimental results. Adjust the Expert mixture slider to explore.</desc>
+            <g class="chart-grid"><path d="M44 24H414M44 82H414M44 140H414"/></g>
+            <g class="chart-labels"><text x="35" y="144" text-anchor="end">0%</text><text id="sweep-mid" x="35" y="86" text-anchor="end">60%</text><text id="sweep-max" x="35" y="28" text-anchor="end">120%</text><text x="44" y="164">All A</text><text x="229" y="164" text-anchor="middle">50 : 50</text><text x="414" y="164" text-anchor="end">All B</text></g>
+            <path id="sweep-area"/><path id="sweep-specific"/><path id="sweep-shared" d="M44 140H414"/>
+            <path id="sweep-cursor" d="M229 24V140"/><circle id="sweep-dot" cx="229" cy="40" r="5"/><circle id="sweep-shared-dot" cx="229" cy="140" r="4"/>
+          </svg>
+          <p id="sweep-insight">Both endpoints are correct. Mixing incompatible parameters introduces error between them.</p>
+        </div>
+      </div>
+      <div class="lab-bottom-note"><p class="lab-note">Kinematic illustration · Not a policy evaluation or recorded rollout. Target action = 1.</p><span>Drag to orbit · Arrow keys to rotate</span></div>
+      <details class="lab-math">
+        <summary>Output-scaling model</summary>
+        <div class="lab-math-body"><p>For a fixed input of 1, a two-parameter model produces action <i>a = d · w</i>. The internal parameter <i>w</i> and output-interface scale <i>d</i> compensate for each other, so both experts remain correct.</p>
+          <div class="lab-equations"><div><h4>Task-specific interfaces</h4><p>Expert A: <i>w</i> = 1, <i>d</i> = 1</p><p>Expert B: <i>w</i> = 1/<i>r</i>, <i>d</i> = <i>r</i></p><p>Let β be the weight assigned to expert B. Merge parameters, not actions:</p><code>a = (1 − β + β/r) × (1 − β + βr)</code><output id="lab-substitution">≈ 0.583 × 3.500 ≈ 2.042</output></div><div><h4>Shared action interface</h4><p>Both experts: <i>w</i> = 1, <i>d</i> = 1</p><p>Keep the interface fixed and combine the hidden parameters:</p><code>a = [(1 − β) × 1 + β × 1] × 1 = 1</code></div></div>
+          <p>This isolates interface mismatch, not interference between different tasks. PolicyWeave preserves normalization, the action encoder, and the action decoder. <a href="#interface-evidence">See the VLA experiment below.</a></p>
+        </div>
+      </details>
+      <p class="sr-only" id="lab-status" aria-live="polite"></p>
+      <noscript><p>Enable JavaScript to adjust this illustration. With a 6× interface scale, parameter averaging gives action 2.042 instead of the target 1; the shared-interface example gives 1.</p></noscript>
+    </div>
+    </section>
+
+    <section class="interface-section section-space" id="interface-evidence" aria-labelledby="interface-evidence-title">
+      <div class="section-shell">
+        
+        <div class="split-heading"><h2 id="interface-evidence-title">Evidence from closed-loop control</h2><p class="lead-copy">In this RoboCasa365 <strong>Counter → Stove</strong> scene, base drift at step 160 is <strong>54.1 cm</strong> with task-specific interfaces, versus <strong>&lt;0.1 cm</strong> with a shared interface. Both policies use weight averaging.</p></div>
+        <figure class="interface-figure"><a href="assets/images/interface-experiment.png" target="_blank" rel="noopener" aria-label="Open full-resolution action-interface experiment"><img src="assets/images/interface-experiment.png" width="2200" height="1137" loading="lazy" alt="RoboCasa365 action-interface diagnostics. Task-specific and shared normalization give different representations of the same raw actions, with the largest shifts in base-motion channels. On Counter to Stove, task-specific-interface weight averaging drifts 54.1 centimeters by step 160, while shared-interface weight averaging stays within 0.1 centimeters."></a><figcaption>(a,b) Normalization differences concentrate in base-motion channels. (c) Base drift during execution. WA: weight averaging.</figcaption></figure>
+        <details class="content-details"><summary>Experiment setup</summary><p>Panels (a,b) apply task-specific and shared normalization to the same 1,800 raw actions across 18 tasks. Panel (c) compares policies from matched scenes with paired denoising noise; the images show step 160.</p></details>
+      </div>
+    </section>
+
+    <section class="method-section section-space" id="method" aria-labelledby="method-title">
+      <div class="section-shell">
+        
+        <h2 id="method-title">Method</h2>
+        <p class="section-intro">Learn task-specific LoRA updates with a shared action interface. Then use expert context responses and ranking stability to select one expert or merge a sparse set.</p>
+        <figure class="method-figure"><a href="assets/images/method.png" target="_blank" rel="noopener" aria-label="Open the full-resolution PolicyWeave method diagram"><img src="assets/images/method.png" width="2200" height="1035" loading="lazy" alt="PolicyWeave overview: frozen VLM and shared action interface during LoRA adaptation, followed by context-response scoring and stability-based sparse merging."></a><figcaption>Shared-interface post-training (left) and context-guided sparse merging (right).</figcaption></figure>
+        <details class="content-details"><summary>Scoring and deployment details</summary><p>Experts are adapted using SFT or SFT then RL. A frozen VLM encodes the initial scene and instruction. Normalized cross-attention key-update responses score expert relevance, and leave-one-layer-out ranking stability determines how many updates to merge. The merged parameters stay fixed throughout the episode. No separately trained router or calibration trajectories are required.</p></details>
+      </div>
+    </section>
+
+    <section class="section-shell section-space results" id="results" aria-labelledby="results-title">
+      
+      <h2 id="results-title">Evaluation</h2>
+      <p class="section-intro">GR00T N1.5 · 18 atomic tasks · 10 long-horizon tasks · 4 real-world tasks</p>
+    <div class="proof-strip" aria-label="Reported benchmark success rates">
+      <a href="#results" data-result-link="robocasa"><span class="proof-label">RoboCasa365 <span>↗</span></span><strong>74.1<span>%</span></strong><span class="proof-context">18 tasks · SFT then RL</span></a>
+      <a href="#results" data-result-link="libero"><span class="proof-label">LIBERO-10 <span>↗</span></span><strong>75.4<span>%</span></strong><span class="proof-context">10 long-horizon tasks · Final success</span></a>
+      <a href="#results" data-result-link="piper"><span class="proof-label">Real-world control <span>↗</span></span><strong>67.5<span>%</span></strong><span class="proof-context">4 tasks · 20 rollouts per task</span></a>
+      
+    </div>
+
+
+      <div class="result-tabs" role="tablist" aria-label="Choose benchmark">
+        <button type="button" id="tab-robocasa" role="tab" aria-selected="true" aria-controls="panel-robocasa" tabindex="0">RoboCasa365<span>Atomic skills + RL</span></button>
+        <button type="button" id="tab-libero" role="tab" aria-selected="false" aria-controls="panel-libero" tabindex="-1">LIBERO-10<span>Long-horizon control</span></button>
+        <button type="button" id="tab-piper" role="tab" aria-selected="false" aria-controls="panel-piper" tabindex="-1">Real robot<span>Four manipulation tasks</span></button>
+      </div>
+      <section class="result-panel" id="panel-robocasa" role="tabpanel" aria-labelledby="tab-robocasa" tabindex="0">
+        <div class="result-summary"><div class="result-number">64.7<span class="number-arrow">→</span>74.1<span class="unit">%</span><p>PolicyWeave · SFT → SFT then RL</p></div><div><h3>Merging after task-specific RL</h3><p>Task-specific RL improves the merged policy; joint RL raises co-training from 58.1% to 60.7%.</p></div></div>
+        <details class="content-details result-details"><summary>Full comparison and evaluation setup</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="RoboCasa365 results"><table><caption>Mean success over 18 tasks · 50 episodes per task</caption><thead><tr><th scope="col">Method</th><th scope="col">SFT</th><th scope="col">SFT then RL</th></tr></thead><tbody><tr class="reference-row"><th scope="row">Individual <span>task identity supplied</span></th><td>65.6%</td><td>76.2%</td></tr><tr><th scope="row">Co-training</th><td>58.1%</td><td>60.7%</td></tr><tr class="group-start"><th scope="row">Weight averaging</th><td>49.6%</td><td>52.3%</td></tr><tr><th scope="row">TIES</th><td>52.9%</td><td>54.2%</td></tr><tr><th scope="row">ISO-CTS</th><td>54.1%</td><td>56.3%</td></tr><tr><th scope="row">TSV-Merge</th><td>54.7%</td><td>61.4%</td></tr><tr><th scope="row">SSR-Merge</th><td>58.9%</td><td>62.8%</td></tr><tr class="ours-row"><th scope="row">PolicyWeave</th><td>64.7%</td><td>74.1%</td></tr></tbody></table></div>
+        <p class="result-note">Merging methods use the same shared-interface expert bank within each training stage. Each task-specific SFT expert uses 50 demonstrations, or 10% of the available task data.</p>
+        </details>
+      </section>
+      <section class="result-panel" id="panel-libero" role="tabpanel" aria-labelledby="tab-libero" tabindex="0" hidden>
+        <div class="result-summary"><div class="result-number">75.4<span class="unit">%</span><p>PolicyWeave · final task success</p></div><div><h3>Long-horizon task success</h3><p>Compared with 80.8% for individual experts and 28.2% for the strongest evaluated static merging method.</p></div></div>
+        <details class="content-details result-details"><summary>Full comparison and evaluation setup</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="LIBERO-10 results"><table><caption>Mean score over 10 tasks · 50 episodes per task · SFT experts</caption><thead><tr><th scope="col">Method</th><th scope="col">Final success</th><th scope="col">Partial success</th></tr></thead><tbody><tr class="reference-row"><th scope="row">Individual <span>task identity supplied</span></th><td>80.8%</td><td>88.9%</td></tr><tr><th scope="row">GR00T N1.5 co-training</th><td>72.4%</td><td>84.1%</td></tr><tr class="group-start"><th scope="row">Weight averaging</th><td>14.0%</td><td>53.9%</td></tr><tr><th scope="row">TIES</th><td>16.0%</td><td>55.0%</td></tr><tr><th scope="row">ISO-CTS</th><td>16.6%</td><td>55.6%</td></tr><tr><th scope="row">TSV-Merge</th><td>28.2%</td><td>61.2%</td></tr><tr class="ours-row"><th scope="row">PolicyWeave</th><td>75.4%</td><td>86.4%</td></tr></tbody></table></div>
+        <p class="result-note">Partial success measures the peak fraction of simultaneously satisfied task goals in each episode. Every expert is trained on its complete long-horizon task; the benchmark evaluates retention, not unseen skill combinations.</p>
+        </details>
+      </section>
+      <section class="result-panel" id="panel-piper" role="tabpanel" aria-labelledby="tab-piper" tabindex="0" hidden>
+        <div class="result-summary"><div class="result-number">67.5<span class="unit">%</span><p>PolicyWeave · four-task mean success</p></div><div><h3>Real-robot task success</h3><p>Compared with 42.5% for GR00T N1.5 co-training and 48.8% for π<sub>0.5</sub> co-training, over 20 rollouts per task.</p></div></div>
+        <details class="content-details result-details"><summary>Per-task results and evaluation setup</summary>
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Real-robot results"><table><caption>Success over 20 rollouts per task and method</caption><thead><tr><th scope="col">Task</th><th scope="col">π<sub>0.5</sub></th><th scope="col">GR00T N1.5</th><th scope="col">PolicyWeave</th></tr></thead><tbody><tr><th scope="row">Upright bottle</th><td>30%</td><td>10%</td><td class="ours-cell">40%</td></tr><tr><th scope="row">Stack blocks</th><td>15%</td><td>10%</td><td class="ours-cell">55%</td></tr><tr><th scope="row">Press button</th><td>80%</td><td>85%</td><td class="ours-cell">95%</td></tr><tr><th scope="row">Place cup</th><td>70%</td><td>65%</td><td class="ours-cell">80%</td></tr><tr class="group-start"><th scope="row">Mean</th><td>48.8%</td><td>42.5%</td><td class="ours-cell">67.5%</td></tr></tbody></table></div>
+        <p class="result-note">π<sub>0.5</sub> and GR00T N1.5 are co-trained on the four tasks. PolicyWeave merges independently post-trained GR00T N1.5 experts.</p>
+        </details>
+      </section>
+    </section>
+
+    <footer class="section-shell footer"><a class="wordmark" href="#main">Policy<span>Weave</span></a><p>Train Together or Merge Later? Unifying VLA Experts via a Shared Action Interface</p><span>UQMM Lab · The University of Queensland</span></footer>
+  </main>
+</body>
+</html>
